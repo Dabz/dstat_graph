@@ -1,3 +1,8 @@
+
+/*
+ * Global variables
+ */
+
 gGraphs = {};
 
 var brush = d3.svg.brush()
@@ -9,6 +14,11 @@ var margin = {top: 10, right: 10, bottom: 100, left: 40},
 
 var x = d3.time.scale().range([0, width]),
     y = d3.scale.linear().range([height, 0]);
+
+
+/*
+ * DOM functions
+ */
 
 
 $(document).on('dragenter', function (e) {
@@ -29,6 +39,10 @@ $(document).on('drop', function (e) {
 });
 
 
+/*
+ * Processing functions
+ */
+
 function processFiles(files) {
   for (f = 0; file = files[f]; f++) {
     processFile(file);
@@ -47,15 +61,16 @@ function processFile(file) {
 
 function processCSV(csv, filename) {
   lines   = csv.split('\n');
-  line2   = lines[2].replace(/"/g, '').split(',');
+  host    = lines[2].replace(/"/g, '').split(',')[1];
   groups  = lines[4].replace(/"/g, '').split(',');
   headers = lines[5].replace(/"/g, '').split(',');
 
-  host    = line2[1];
   graphs  = [];
   map     = [];
   gindex  = -1;
+  nlines  = lines.length - 6;
 
+  /* Browse headers */
   for (i = 0, j = 0; i < headers.length; i++, j++) {
     if (groups[i] != "") {
       last_group         = groups[i];
@@ -68,18 +83,33 @@ function processCSV(csv, filename) {
     map[i] = {group: gindex, index: j, name: headers[i]};
   }
 
-  for (lindex = 6; lindex < lines.length; lindex++) {
+  xValues = getValues(graphs, 'system', 'time');
+  /* Use time for XAxis */
+  if (xValues !== null) {
+    graphs.xAxis = function (xa) { xa.axisLabel('Time').tickFormat(function(d) { return d3.time.format('%Hh %Mm %Ss')(new Date(d)); }) };
+    for (lindex = 6, iindex = 0; lindex < lines.length; lindex++, iindex++) {
+      line = lines[lindex].replace(/"/g, '').split(',');
+      for (cindex = 0; cindex < line.length; cindex++) {
+        lmap = map[cindex];
+        if (lmap.name === 'time') {
+          xValues.push(Date.parse(line[cindex].replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')));
+          break;
+        }
+      }
+    } /* Use sequence for xAxis */
+  } else {
+      xValues = Array.apply(null, Array(nlines)).map(function (_, i) {return i;});
+      graphs.xAxis = function (xa) { xa.axisLabel('').tickFormat(function(d) { return d3.format('d')(new Date(d)); }) };
+  }
+
+  /* Populate graph data */
+  for (lindex = 6, iindex = 0; lindex < lines.length; lindex++, iindex++) {
     line = lines[lindex].replace(/"/g, '').split(',');
     for (cindex = 0; cindex < line.length; cindex++) {
       lmap = map[cindex];
-      if (lmap.name == 'time') {
-        timeStr = line[cindex];
-        timeStr = timeStr.replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')
-        time = Date.parse(timeStr);
-      }
-      else {
+      if (lmap.name != 'time') {
         nVal = parseFloat(line[cindex]);
-
+        /* non numerical line */
         if (isNaN(nVal)) {
           val = line[cindex]
           graphs[lmap.group].yformat = function(_) {return _};
@@ -89,11 +119,12 @@ function processCSV(csv, filename) {
           graphs[lmap.group].yformat = d3.format('<-,02f');
         }
 
-        graphs[lmap.group].d[lmap.index].values.push({y: val, x: time});
+        graphs[lmap.group].d[lmap.index].values.push({y: val, x: xValues[iindex]});
       }
     }
   }
 
+  /* Create the brush */
   dmin = graphs[1].d[1].values[0].x;
   dmax = graphs[1].d[0].values[graphs[1].d[0].values.length -1].x;
   if (lines.length > 500) {
@@ -102,6 +133,7 @@ function processCSV(csv, filename) {
 
   displayFocusGraph(graphs, dmin, dmax);
 
+  /* create & display the graphs */
   for (gindex = 0; gindex <  graphs.length; gindex++) {
     if (graphs[gindex].name != "system" && graphs[gindex].d[0].key != "time") {
       graphName   = graphs[gindex].name;
@@ -145,7 +177,7 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
             .showLegend(true)
           ;
 
-          chart.xAxis.axisLabel('Time').tickFormat(function(d) { return d3.time.format('%Hh %Mm %Ss')(new Date(d)); });
+          graphs.xAxis(chart.xAxis);
           chart.yAxis.tickFormat(graphFormat);
 
           elt.call(chart);
@@ -177,7 +209,21 @@ function getValues(graphs, group, header) {
     }
   }
 
-  return [];
+  return null;
+}
+
+function getExists(graphs, group, header) {
+  for (i in graphs) {
+    if (graphs[i].name == group) {
+      for (j in graphs[i].d) {
+        if (graphs[i].d[j].key == header) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 var displayFocusGraphInitialized = false;

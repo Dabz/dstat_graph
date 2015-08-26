@@ -24,12 +24,12 @@ var x = d3.time.scale().range([0, width]),
 $(document).on('dragenter', function (e) {
     e.stopPropagation();
     e.preventDefault();
-    $('#drop').css('border', '4px dashed #fff')
+    $('#drop').css('border', '4px solid #fff')
   });
 $(document).on('dragover', function (e) {
   e.stopPropagation();
   e.preventDefault();
-  $('#drop').css('border', '4px dashed red')
+  $('#drop').css('border', '4px solid red')
 });
 $(document).on('drop', function (e) {
   e.stopPropagation();
@@ -124,6 +124,23 @@ function processCSV(csv, filename) {
     }
   }
 
+  /* Apply specificities to data */
+  for (i in graphs) {
+    name       = graphs[i].name;
+    name       = name.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+    sfname     = name + "_data";
+    gdfunction = undefined;
+
+    if (typeof window[sfname] == "function") {
+      gdfunction = window[sfname];
+    }
+    for (j in graphs[i].d) {
+      if (gdfunction !== undefined) {
+        graphs[i].d[j].values = gdfunction(graphs[i].d[j].values);
+      }
+    }
+  }
+
   /* Create the brush */
   dmin = graphs[1].d[1].values[0].x;
   dmax = graphs[1].d[0].values[graphs[1].d[0].values.length -1].x;
@@ -171,6 +188,9 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
       var elt = d3.select(this);
 
       nv.addGraph(function() {
+          graphId = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+          graphFu = graphId + '_graph';
+
           var chart = nv.models.lineChart()
             .margin({left: 100})
             .useInteractiveGuideline(true)
@@ -178,10 +198,10 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
           ;
 
           graphs.xAxis(chart.xAxis);
-          chart.yAxis.tickFormat(graphFormat);
 
-          elt.call(chart);
-          nv.utils.windowResize(chart.update);
+          if (typeof window[graphFu] == "function") {
+            window[graphFu](chart);
+          }
 
           pb = d3.select(elt[0][0].parentNode.parentNode).select('.clickable').on("click", function() {
             pb = d3.select(this.parentNode.parentNode.parentNode).selectAll('.list-body');
@@ -189,6 +209,9 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
             pb.style('display', isHidden ? 'inherit' : 'none');
             chart.update()
           });
+
+          elt.call(chart);
+          nv.utils.windowResize(chart.update);
 
           return chart;
         }, function(chart) {

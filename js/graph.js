@@ -6,7 +6,7 @@ function dsk_total_data(data) {
   for (idata in data) {
     ldata = data[idata];
     /* Byte to MB */
-    data[idata].y = Math.round((data[idata].y / (1024 * 1024 * 1024) * 100 )) / 100;
+    data[idata].y = Math.round((data[idata].y / (1024 * 1024) ));
   }
 
   return data;
@@ -33,7 +33,7 @@ function net_total_data(data) {
   for (idata in data) {
     ldata = data[idata];
     /* Byte to MB */
-    data[idata].y = Math.round((data[idata].y / (1024 * 1024) * 100 )) / 100;
+    data[idata].y = Math.round((data[idata].y / (1024 * 1024)));
   }
 
   return data;

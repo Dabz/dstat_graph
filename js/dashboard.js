@@ -39,8 +39,9 @@ $(document).on('drop', function (e) {
 });
 
 
+
 /*
- * Processing functions
+ * CSV Processing functions
  */
 
 function processFiles(files) {
@@ -59,16 +60,61 @@ function processFile(file) {
   reader.readAsText(file);
 }
 
+/*
+ * return dstat header end line
+ * TODO: Improve the detection mechanism
+ */
+function findHeaderEnd(lines) {
+  host   = "";
+  dataIn = -1
+
+  // Let's browse only 10 lines, if there is more, it could mean it's not a valid file
+  for (i = 0; i < 10; i++) {
+    line = lines[i].replace(/"/g, '').split(',');
+    if (line[0] == "Host:") {
+      host = line[1]
+    }
+    if (lines[i].length > 0 && lines[i][0] != '"') {
+      dataIn = i;
+      break;
+    }
+  }
+
+  // Not a valid file
+  if (dataIn == -1) {
+    return null;
+  }
+
+  return { "host"    : host,
+           "groups"  : lines[dataIn - 2].replace(/"/g, '').split(','),
+           "headers" : lines[dataIn - 1].replace(/"/g, '').split(','),
+           "nlines"  : lines.length - dataIn,
+           "dataIn"  : dataIn
+         };
+}
+
+/*
+ * Entry point for parsing CSV
+ * CSV file is read and dispatch line by line in a 2D array
+ * Then we browse these 2D array to create the required d3 structure
+ *
+ */
 function processCSV(csv, filename) {
   lines   = csv.split('\n');
-  host    = lines[2].replace(/"/g, '').split(',')[1];
-  groups  = lines[4].replace(/"/g, '').split(',');
-  headers = lines[5].replace(/"/g, '').split(',');
+  l_env   = findHeaderEnd(lines);
 
+  if (l_env == null) {
+    alert('Non valid CSV file: ' + filename + '. Failed at parsing header')
+    return;
+  }
+
+  host    = l_env.host;
+  groups  = l_env.groups;
+  headers = l_env.headers;
+  nlines  = l_env.nlines;
   graphs  = [];
   map     = [];
   gindex  = -1;
-  nlines  = lines.length - 6;
 
   /* Browse headers */
   for (i = 0, j = 0; i < headers.length; i++, j++) {
@@ -83,15 +129,16 @@ function processCSV(csv, filename) {
     map[i] = {group: gindex, index: j, name: headers[i]};
   }
 
+  // First, let's merge headers and groups in a single object
   xValues = getValues(graphs, 'system', 'time');
   /* Use time for XAxis */
   if (xValues !== null) {
     graphs.xAxis = function (xa) { xa.axisLabel('Time').tickFormat(function(d) { return d3.time.format('%Hh %Mm %Ss')(new Date(d)); }) };
-    for (lindex = 6, iindex = 0; lindex < lines.length; lindex++, iindex++) {
+    for (lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
       line = lines[lindex].replace(/"/g, '').split(',');
       for (cindex = 0; cindex < line.length; cindex++) {
         lmap = map[cindex];
-        if (lmap.name === 'time') {
+        if (lmap != null && lmap.name === 'time') {
           xValues.push(Date.parse(line[cindex].replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')));
           break;
         }
@@ -102,14 +149,14 @@ function processCSV(csv, filename) {
       graphs.xAxis = function (xa) { xa.axisLabel('').tickFormat(function(d) { return d3.format('d')(new Date(d)); }) };
   }
 
-  /* Populate graph data */
-  for (lindex = 6, iindex = 0; lindex < lines.length; lindex++, iindex++) {
+  /* Then, populate the graphs object with the CSV values */
+  for (lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
     line = lines[lindex].replace(/"/g, '').split(',');
     for (cindex = 0; cindex < line.length; cindex++) {
       lmap = map[cindex];
-      if (lmap.name != 'time') {
+      if (lmap != null && lmap.name != 'time') {
         nVal = parseFloat(line[cindex]);
-        /* non numerical line */
+        /* handle non numerical line */
         if (isNaN(nVal)) {
           val = line[cindex]
           graphs[lmap.group].yformat = function(_) {return _};
@@ -124,7 +171,7 @@ function processCSV(csv, filename) {
     }
   }
 
-  /* Apply specificities to data */
+  /* Apply specificities for each data headers */
   for (i in graphs) {
     name       = graphs[i].name;
     name       = name.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
@@ -144,6 +191,7 @@ function processCSV(csv, filename) {
   /* Create the brush */
   dmin = graphs[1].d[1].values[0].x;
   dmax = graphs[1].d[0].values[graphs[1].d[0].values.length -1].x;
+  // If there is many point, let's start by focusing on the last ones to reduce loading time
   if (lines.length > 500) {
     dmin = graphs[1].d[0].values[graphs[1].d[0].values.length - 500].x;
   }
@@ -163,6 +211,9 @@ function processCSV(csv, filename) {
 }
 
 
+/*
+ * Create or use an already existing panel to display the graph
+ */
 function createPanel(graphName, graphData, filename) {
   id  = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
   div = d3.select('#' + id);
@@ -182,7 +233,9 @@ function createPanel(graphName, graphData, filename) {
 }
 
 
-
+/*
+ * Create the graph d3 object
+ */
 function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
   panel.selectAll('svg').each(function() {
       var elt = d3.select(this);
@@ -250,13 +303,26 @@ function getExists(graphs, group, header) {
 }
 
 var displayFocusGraphInitialized = false;
+
+/*
+ * Create the focus graph
+ * By default, use the oposite of idle cpu time
+ * If not found in the CSV, take the first element
+ */
 function displayFocusGraph(graphs, dmin, dmax) {
   if (displayFocusGraphInitialized) {
     return;
   }
 
   displayFocusGraphInitialized = true;
-  data = getValues(graphs, "total cpu usage", "idl").map(function(idl) { return {x: idl.x, y: (100 - parseFloat(idl.y)) };});
+  data = getValues(graphs, "total cpu usage", "idl")
+  if (data) { // Rollback to the first element if not found
+    data = data.map(function(idl) { return {x: idl.x, y: (100 - parseFloat(idl.y)) };});
+  }
+  else {
+    data = graphs[0].d[0].values;
+    data = data.map(function(idl) { return {x: idl.x, y: idl.y };});
+  }
 
   x.domain(d3.extent(data.map(function(val) { return val.x })));
   y.domain([0, d3.max(data.map(function(val) { return val.y }))]);

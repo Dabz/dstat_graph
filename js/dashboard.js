@@ -68,8 +68,8 @@ function findHeaderEnd(lines) {
   host   = "";
   dataIn = -1
 
-  // Let's browse only 10 lines, if there is more, it could mean it's not a valid file
-  for (i = 0; i < 10; i++) {
+  // Let's browse only 20 lines, if there is more, it could mean it's not a valid file
+  for (i = 0; i < 20; i++) {
     line = lines[i].replace(/"/g, '').split(',');
     if (line[0] == "Host:") {
       host = line[1]

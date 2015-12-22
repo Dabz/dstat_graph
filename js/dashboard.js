@@ -232,6 +232,14 @@ function createPanel(graphName, graphData, filename) {
   return div;
 }
 
+/*
+ * Create generic graph options
+ */
+function createInitialOptions(graphData) {
+  options = {}
+
+  return options;
+}
 
 /*
  * Create the graph d3 object
@@ -241,14 +249,36 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
       var elt = d3.select(this);
 
       nv.addGraph(function() {
-          graphId = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
-          graphFu = graphId + '_graph';
+          graphId    = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+          graphFu    = graphId + '_graph';
+          graphFuPre = graphId + '_options';
+          options    = createInitialOptions(graphData);
 
-          var chart = nv.models.lineChart()
-            .margin({left: 100})
-            .useInteractiveGuideline(true)
-            .showLegend(true)
-          ;
+          if (typeof window[graphFuPre] == "function") {
+            options = window[graphFuPre]();
+          }
+
+          if (options.type == 'stacked') {
+            var chart = nv.models.stackedAreaChart()
+              .margin({left: 100})
+              .useInteractiveGuideline(true)
+              .showLegend(true)
+              .style('expand')
+              .interpolate("basis")
+              .showControls(false)
+              ;
+          } else if (options.type == 'pie') {
+            var chart = nv.models.bulletChart()
+              .margin({left: 100})
+              ;
+          } else {
+            var chart = nv.models.lineChart()
+              .margin({left: 100})
+              .useInteractiveGuideline(true)
+              .interpolate("basis")
+              .showLegend(true)
+            ;
+          }
 
           graphs.xAxis(chart.xAxis);
 
@@ -327,11 +357,10 @@ function displayFocusGraph(graphs, dmin, dmax) {
   x.domain(d3.extent(data.map(function(val) { return val.x })));
   y.domain([0, d3.max(data.map(function(val) { return val.y }))]);
 
-  brush.x(x)
-    .extent([dmin, dmax]);
+  brush.x(x).extent([dmin, dmax]);
 
   var area = d3.svg.area()
-    .interpolate("monotone")
+    .interpolate("basis")
     .x(function(d) { return x(d.x) })
     .y1(function(d) { return y(d.y) })
     .y0(height);

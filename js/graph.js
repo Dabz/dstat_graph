@@ -22,6 +22,18 @@ function dsk_total_graph(graph) {
 
 function total_cpu_usage_graph(graph) {
   graph.yAxis.axisLabel('%');
+  graph.color(function (d) {
+      if (d.key == 'idl') return 'white'; if (d.key == 'usr') return '#aec7e8'; if (d.key == 'sys') return '#ff7f7f';
+      if (d.key == 'stl') return '#7b94b5'; return '#ffd384';
+  })
+}
+
+function total_cpu_usage_options() {
+  return { type: 'stacked' };
+}
+
+function total_cpu_usage_data(data) {
+  return data;
 }
 
 

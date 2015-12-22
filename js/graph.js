@@ -64,6 +64,28 @@ function net_total_options() {
 }
 
 /*
+ * mem
+ */
+
+function memory_usage_data(data) {
+  for (idata in data) {
+    ldata = data[idata];
+    /* Byte to MB */
+    data[idata].y = Math.round((data[idata].y / (1024 * 1024) ));
+  }
+
+  return data;
+}
+
+function memory_usage_graph(graph) {
+  graph.yAxis.axisLabel('Memory (MB)').tickFormat(function(d) { return d3.format('.2f')(d); });
+}
+
+function memory_usage_options() {
+  return { area: true };
+}
+
+/*
  * MongoDB
  */
 

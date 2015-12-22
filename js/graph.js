@@ -12,6 +12,10 @@ function dsk_total_data(data) {
   return data;
 }
 
+function dsk_total_options() {
+  return { area: true };
+}
+
 function dsk_total_graph(graph) {
   graph.yAxis.axisLabel('Trafic (MB)').tickFormat(function(d) { return d3.format('.2f')(d); });
 }
@@ -55,6 +59,10 @@ function net_total_graph(graph) {
   graph.yAxis.axisLabel('Trafic (MB)').tickFormat(function(d) { return d3.format('.2f')(d); });
 }
 
+function net_total_options() {
+  return { area: true };
+}
+
 /*
  * MongoDB
  */
@@ -69,4 +77,8 @@ function mongodb_con_graph(graph) {
 
 function mongodb_mem_graph(graph) {
   graph.yAxis.axisLabel('Size (MB)').tickFormat(function(d) { return d3.format('d.0')(d); });
+}
+
+function mongodb_mem_options() {
+  return { area: true };
 }

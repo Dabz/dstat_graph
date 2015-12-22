@@ -153,7 +153,11 @@ function processCSV(csv, filename) {
     } /* Use sequence for xAxis */
   } else {
       xValues = Array.apply(null, Array(nlines)).map(function (_, i) {return i;});
-      graphs.xAxis = function (xa) { xa.axisLabel('').tickFormat(function(d) { return d3.format('d')(new Date(d)); }) };
+      graphs.xAxis = function (xa) {
+        xa.axisLabel('').tickFormat(function(d) {
+            return d3.format('d')(d);
+          })
+      };
   }
 
   /* Then, populate the graphs object with the CSV values */
@@ -183,14 +187,24 @@ function processCSV(csv, filename) {
     name       = graphs[i].name;
     name       = name.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
     sfname     = name + "_data";
+    ofname     = name + "_options";
     gdfunction = undefined;
+    options    = {};
 
     if (typeof window[sfname] == "function") {
       gdfunction = window[sfname];
     }
+    if (typeof window[ofname] == "function") {
+      options = window[ofname]();
+    }
     for (j in graphs[i].d) {
       if (gdfunction !== undefined) {
         graphs[i].d[j].values = gdfunction(graphs[i].d[j].values);
+      }
+      if (options !== undefined) {
+        if (options.area === true) {
+          graphs[i].d[j].area = true;
+        }
       }
     }
   }

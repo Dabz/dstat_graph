@@ -133,7 +133,14 @@ function processCSV(csv, filename) {
   xValues = getValues(graphs, 'system', 'time');
   /* Use time for XAxis */
   if (xValues !== null) {
-    graphs.xAxis = function (xa) { xa.axisLabel('Time').tickFormat(function(d) { return d3.time.format('%Hh %Mm %Ss')(new Date(d)); }) };
+    graphs.xAxis = function (xa) {
+      xa.axisLabel('Time').tickFormat(function(d) {
+          if (typeof d === 'string') {
+            return d;
+          }
+          return d3.time.format('%Hh %Mm %Ss')(new Date(d));
+        })
+    };
     for (lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
       line = lines[lindex].replace(/"/g, '').split(',');
       for (cindex = 0; cindex < line.length; cindex++) {

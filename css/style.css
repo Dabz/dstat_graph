@@ -59,10 +59,6 @@ html,body {
   background-color: #ABC2EF;
 }
 
-#dashboard svg {
-  height: 200px;
-}
-
 body {
   background-color: black;
 }
@@ -102,6 +98,22 @@ body {
   border: 1px solid #60668C;
 }
 
+.list-group-item-compact  {
+  width: 600px;
+  float: left;
+}
+.list-group-item-compact svg {
+  height: 50px !important;
+}
+
+.panel-left {
+  float: left;
+}
+
+.panel-clear {
+  clear: both;
+}
+
 .list-body {
   margin-right: 10px;
   margin-left: -30px;
@@ -123,6 +135,7 @@ body {
   background: rgba(0,0,0,0.8);
   z-index: 99999;
 }
+
 #drop {
   padding: 20px;
   font-size: 21px;
@@ -139,3 +152,8 @@ body {
   background-color: white;
   overflow: hidden;
 }
+
+.list-body svg {
+  height: 200px;
+}
+

@@ -39,6 +39,15 @@ $(document).on('drop', function (e) {
 });
 
 
+/*
+ * Settings functions
+ */
+
+var settings = { "compact": false }
+applySettings(settings)
+
+function applySettings(settings) {
+}
 
 /*
  * CSV Processing functions
@@ -225,7 +234,7 @@ function processCSV(csv, filename) {
       graphName   = graphs[gindex].name;
       graphData   = graphs[gindex].d;
       graphFormat = graphs[gindex].yformat;
-      panel = createPanel(graphName, graphData, host)
+      panel = createPanel(graphName, graphData, filename)
       displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax);
     }
   }
@@ -237,18 +246,33 @@ function processCSV(csv, filename) {
  */
 function createPanel(graphName, graphData, filename) {
   id  = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+  data = reduceData(graphData)
   div = d3.select('#' + id);
 
-  if (div.empty()) {
-    div = d3.select('#dashboard').append('div').attr('class', ' list-group-item').attr('id', id);
-    header = div.append('div').attr('class', 'panel-heading').append('h3').attr('class', 'panel-title');
-    header.append('span').text(graphName);
-    header.append('span').attr('class', 'glyphicon glyphicon-chevron-right pull-right clickable');
+  if (! settings.compact) {
+    if (div.empty()) {
+      div = d3.select('#dashboard').append('div').attr('class', ' list-group-item').attr('id', id);
+      header = div.append('div').attr('class', 'panel-heading').append('h3').attr('class', 'panel-title');
+      header.append('span').text(graphName);
+      header.append('span').attr('class', 'glyphicon glyphicon-chevron-right pull-right clickable');
+    }
+    elt = div.append('div').attr('class', 'row list-body');
+    elt.append('p').text(filename)
+    elt.append('svg').datum(reduceData(graphData));
+  } else if (settings.compact) {
+    if (div.empty()) {
+      div = d3.select('#dashboard').append('div').attr('class', 'list-group-item-compact').attr('id', id);
+      header = d3.select('#dashboard').append('div').attr('class', 'panel-left')
+      d3.select('#dashboard').append('div').attr('class', 'panel-clear')
+      header.append('p').attr('class', 'panel-left').text(graphName)
+      colors = nv.utils.getColor()
+      for (i in graphData) {
+        header.append('p').attr('class', 'panel-left').text(graphData[i].key).style({color: colors(i), 'margin-left': '15px'});
+      }
+    }
+    elt = div.append('div').attr('class', 'row list-body');
+    elt.append('svg').datum(data);
   }
-
-  elt = div.append('div').attr('class', 'row list-body');
-  elt.append('p').text(filename)
-  elt.append('svg').datum(reduceData(graphData));
 
   return div;
 }
@@ -282,11 +306,13 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
           if (options.type == 'stacked') {
             var chart = nv.models.stackedAreaChart()
               .margin({left: 100})
-              .useInteractiveGuideline(true)
-              .showLegend(true)
+              .useInteractiveGuideline(! settings.compact)
+              .showLegend(! settings.compact)
               .style('expand')
               .interpolate("basis")
               .showControls(false)
+              .showXAxis(! settings.compact)
+              .showYAxis(! settings.compact)
               ;
           } else if (options.type == 'pie') {
             var chart = nv.models.bulletChart()
@@ -295,11 +321,14 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
           } else {
             var chart = nv.models.lineChart()
               .margin({left: 100})
-              .useInteractiveGuideline(true)
+              .useInteractiveGuideline(! settings.compact)
               .interpolate("basis")
-              .showLegend(true)
+              .showLegend(! settings.compact)
+              .showXAxis(! settings.compact)
+              .showYAxis(! settings.compact)
             ;
           }
+
 
           graphs.xAxis(chart.xAxis);
 

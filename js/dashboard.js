@@ -1,9 +1,8 @@
-
 /*
  * Global variables
  */
-
 gGraphs = {};
+gCSVs   = [];
 
 var brush = d3.svg.brush()
   .on("brushend", brushed);
@@ -19,8 +18,6 @@ var x = d3.time.scale().range([0, width]),
 /*
  * DOM functions
  */
-
-
 $(document).on('dragenter', function (e) {
     e.stopPropagation();
     e.preventDefault();
@@ -40,9 +37,23 @@ $(document).on('drop', function (e) {
 
 
 /*
+ * Init functions
+ */
+$(document).ready(function() {
+    // initialize graphs contained in gCSVs
+    if (gCSVs !== undefined && gCSVs.length > 0) {
+      $('#drop-background').hide();
+      for (i in gCSVs) {
+        processCSV(gCSVs[i], "csv " + i)
+      }
+    }
+  }
+)
+
+
+/*
  * Settings functions
  */
-
 var settings = { "compact": false }
 applySettings(settings)
 
@@ -52,7 +63,6 @@ function applySettings(settings) {
 /*
  * CSV Processing functions
  */
-
 function processFiles(files) {
   for (f = 0; file = files[f]; f++) {
     processFile(file);

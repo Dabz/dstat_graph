@@ -104,3 +104,4 @@ function mongodb_mem_graph(graph) {
 function mongodb_mem_options() {
   return { area: true };
 }
+

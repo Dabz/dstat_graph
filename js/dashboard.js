@@ -3,6 +3,7 @@
  */
 gGraphs = {};
 gCSVs   = [];
+gFiles  = [];
 
 var brush = d3.svg.brush()
   .on("brushend", brushed);
@@ -54,26 +55,25 @@ $(document).ready(function() {
 /*
  * Settings functions
  */
-var settings = { "compact": false }
-applySettings(settings)
+var settings = { "interface": "standard", "xaxis": 'time' }
 
-function applySettings(settings) {
-}
 
 /*
  * CSV Processing functions
  */
 function processFiles(files) {
-  for (f = 0; file = files[f]; f++) {
-    processFile(file);
+  for (i = 0; i < files.length; i++) {
+    gFiles.push(files[i]);
+    processFile(files[i]);
   }
 }
 
 function processFile(file) {
-  reader = new FileReader();
+  let reader = new FileReader();
+  let name   = file.name;
   reader.onload = function(e) {
-    text = reader.result;
-    processCSV(text, file.name);
+    text = e.target.result;
+    processCSV(text, name);
   }
 
   reader.readAsText(file);
@@ -151,7 +151,7 @@ function processCSV(csv, filename) {
   // First, let's merge headers and groups in a single object
   xValues = getValues(graphs, 'system', 'time');
   /* Use time for XAxis */
-  if (xValues !== null) {
+  if (xValues !== null && settings.xaxis == "time") {
     graphs.xAxis = function (xa) {
       xa.axisLabel('Time').tickFormat(function(d) {
           if (typeof d === 'string') {
@@ -392,19 +392,15 @@ function getExists(graphs, group, header) {
   return false;
 }
 
-var displayFocusGraphInitialized = false;
-
 /*
  * Create the focus graph
  * By default, use the oposite of idle cpu time
  * If not found in the CSV, take the first element
  */
 function displayFocusGraph(graphs, dmin, dmax) {
-  if (displayFocusGraphInitialized) {
+  if ($('#focus').children().size() > 0) {
     return;
   }
-
-  displayFocusGraphInitialized = true;
   data = getValues(graphs, "total cpu usage", "idl")
   if (data) { // Rollback to the first element if not found
     data = data.map(function(idl) { return {x: idl.x, y: (100 - parseFloat(idl.y)) };});
@@ -498,4 +494,27 @@ function brushed() {
       }
     }
   }
+}
+
+function change_xaxis(type) {
+  settings.xaxis = type;
+  refresh();
+}
+
+function change_interface(type) {
+  settings.compact = (type == 'compact');
+  refresh();
+}
+
+function refresh() {
+  d3.select('#dashboard').html("");
+  d3.select('#focus').html("");
+  for (i in gFiles) {
+    processFile(gFiles[i]);
+  }
+}
+
+
+function toggle_menu() {
+  $('#menu').slideToggle('slow');
 }

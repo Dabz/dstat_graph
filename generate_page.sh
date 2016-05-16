@@ -7,8 +7,16 @@
 ## Login   <d.gasparina@gmail.com>
 ##
 ## Started on  Tue 23 Feb 20:17:04 2016 gaspar_d
-## Last update Tue 23 Feb 21:08:26 2016 gaspar_d
+## Last update Wed 11 May 17:54:27 2016 gaspar_d
 ##
+
+print_usage() {
+  cat <<EOF
+OVERVIEW: generate a standalone HTML page that you can share with your colleagues
+USAGE: $0 file1.csv file2.csv ...
+EOF
+
+}
 
 main() {
   gCSVs=""
@@ -39,5 +47,10 @@ main() {
   echo "</body>"
 }
 
+
+if [ $# -eq 0 ]; then
+  print_usage $0
+  exit 1
+fi
 
 main $@

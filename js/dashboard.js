@@ -1,9 +1,9 @@
 /*
  * Global variables
  */
-gGraphs = {};
-gCSVs   = [];
-gFiles  = [];
+var gGraphs = {};
+var gCSVs   = [];
+var gFiles  = [];
 
 var brush = d3.svg.brush()
   .on("brushend", brushed);
@@ -62,6 +62,9 @@ var settings = { "interface": "standard", "xaxis": 'time' }
  * CSV Processing functions
  */
 function processFiles(files) {
+  if ((files.length + gFiles.length) > 1) { // switch to sequential if multiple files are present
+    settings.xaxis = 'sequential';
+  }
   for (i = 0; i < files.length; i++) {
     gFiles.push(files[i]);
     processFile(files[i]);
@@ -245,7 +248,7 @@ function processCSV(csv, filename) {
       graphData   = graphs[gindex].d;
       graphFormat = graphs[gindex].yformat;
       panel = createPanel(graphName, graphData, filename)
-      displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax);
+      displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax, filename);
     }
   }
 }
@@ -271,8 +274,10 @@ function createPanel(graphName, graphData, filename) {
     elt.append('svg').datum(reduceData(graphData));
   } else if (settings.compact) {
     if (div.empty()) {
-      div = d3.select('#dashboard').append('div').attr('class', 'list-group-item-compact').attr('id', id);
+      div    = d3.select('#dashboard').append('div').attr('class', 'list-group-item-compact').attr('id', id);
       header = d3.select('#dashboard').append('div').attr('class', 'panel-left')
+      info   = d3.select('#dashboard').append('div').attr('class', 'panel-left')
+
       d3.select('#dashboard').append('div').attr('class', 'panel-clear')
       header.append('p').attr('class', 'panel-left').text(graphName)
       colors = nv.utils.getColor()
@@ -299,22 +304,24 @@ function createInitialOptions(graphData) {
 /*
  * Create the graph d3 object
  */
-function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
+function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax, filename) {
   panel.selectAll('svg').each(function() {
-      var elt = d3.select(this);
+      let elt = d3.select(this);
 
       nv.addGraph(function() {
-          graphId    = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
-          graphFu    = graphId + '_graph';
-          graphFuPre = graphId + '_options';
-          options    = createInitialOptions(graphData);
+          let graphId    = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+          let graphFu    = graphId + '_graph';
+          let graphFuPre = graphId + '_options';
+          let options    = createInitialOptions(graphData);
 
           if (typeof window[graphFuPre] == "function") {
             options = window[graphFuPre]();
           }
 
+          let chart = null;
+
           if (options.type == 'stacked') {
-            var chart = nv.models.stackedAreaChart()
+            chart = nv.models.stackedAreaChart()
               .margin({left: 100})
               .useInteractiveGuideline(! settings.compact)
               .showLegend(! settings.compact)
@@ -322,20 +329,20 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
               .interpolate("basis")
               .showControls(false)
               .showXAxis(! settings.compact)
-              .showYAxis(! settings.compact)
+              .showYAxis(true)
               ;
           } else if (options.type == 'pie') {
-            var chart = nv.models.bulletChart()
+            chart = nv.models.bulletChart()
               .margin({left: 100})
               ;
           } else {
-            var chart = nv.models.lineChart()
+            chart = nv.models.lineChart()
               .margin({left: 100})
               .useInteractiveGuideline(! settings.compact)
               .interpolate("basis")
               .showLegend(! settings.compact)
               .showXAxis(! settings.compact)
-              .showYAxis(! settings.compact)
+              .showYAxis(true)
             ;
           }
 
@@ -346,7 +353,7 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
             window[graphFu](chart);
           }
 
-          pb = d3.select(elt[0][0].parentNode.parentNode).select('.clickable').on("click", function() {
+          let pb = d3.select(elt[0][0].parentNode.parentNode).select('.clickable').on("click", function() {
             pb = d3.select(this.parentNode.parentNode.parentNode).selectAll('.list-body');
             isHidden = pb.style('display') == 'none';
             pb.style('display', isHidden ? 'inherit' : 'none');
@@ -358,8 +365,8 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax) {
 
           return chart;
         }, function(chart) {
-          if (gGraphs[graphName] == undefined) gGraphs[graphName] = [];
-          gGraphs[graphName].push({elt: elt, chart: chart, data: graphData});
+          if (gGraphs[graphName] == undefined) gGraphs[graphName] = {};
+          gGraphs[graphName][filename] = {elt: elt, chart: chart, data: graphData, filename: filename};
         });
     });
 }
@@ -458,11 +465,11 @@ function displayFocusGraph(graphs, dmin, dmax) {
 }
 
 function reduceData(data) {
-  ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
-  extD = [ext[0] instanceof String ? Date.parse(ext[0]) : ext[0],
+  let ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
+  let extD = [ext[0] instanceof String ? Date.parse(ext[0]) : ext[0],
           ext[1] instanceof String ? Date.parse(ext[1]) : ext[1]];
 
-  ndata = data.map(function(d, i) {
+  let ndata = data.map(function(d, i) {
     return {
       key: d.key,
       area: d.area,
@@ -475,18 +482,18 @@ function reduceData(data) {
 
 
 function brushed() {
-  ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
+  let ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
 
   for (var name in gGraphs) {
     if (gGraphs.hasOwnProperty(name)) {
       for (gIndex in gGraphs[name]) {
-        graph = gGraphs[name][gIndex];
-        chart = graph.chart;
-        elt   = graph.elt;
-        data  = graph.data;
-        ndata = reduceData(data);
-        chart.xDomain(ext);
+        let graph = gGraphs[name][gIndex];
+        let chart = graph.chart;
+        let elt   = graph.elt;
+        let data  = graph.data;
+        let ndata = reduceData(data);
 
+        chart.xDomain(ext);
         elt.call(chart.xAxis);
         elt.datum(ndata);
 
@@ -506,6 +513,11 @@ function change_interface(type) {
   refresh();
 }
 
+/*
+ * Destroy all graphs & the focus bars
+ * and recreate them using the content of
+ * gFiles (all uploaded files)
+ */
 function refresh() {
   d3.select('#dashboard').html("");
   d3.select('#focus').html("");
@@ -515,6 +527,15 @@ function refresh() {
 }
 
 
+/*
+ * Toggle header menu
+ */
 function toggle_menu() {
-  $('#menu').slideToggle('slow');
+  if ($('#menu').is(":hidden")) {
+    $('#menu').slideDown('slow');
+    $('#dashboard').animate({ "padding-top": "+=50px" }, 'slow');
+  } else {
+    $('#menu').slideUp('slow');
+    $('#dashboard').animate({ "padding-top": "-=50px" }, 'slow');
+  }
 }

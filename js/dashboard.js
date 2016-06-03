@@ -72,8 +72,8 @@ function processFiles(files) {
 }
 
 function processFile(file) {
-  let reader = new FileReader();
-  let name   = file.name;
+  var reader = new FileReader();
+  var name   = file.name;
   reader.onload = function(e) {
     text = e.target.result;
     processCSV(text, name);
@@ -91,7 +91,7 @@ function findHeaderEnd(lines) {
   dataIn = -1
 
   // Let's browse only 20 lines, if there is more, it could mean it's not a valid file
-  for (i = 0; i < 20; i++) {
+  for (var i = 0; i < 20; i++) {
     line = lines[i].replace(/"/g, '').split(',');
     if (line[0] == "Host:") {
       host = line[1]
@@ -139,7 +139,7 @@ function processCSV(csv, filename) {
   gindex  = -1;
 
   /* Browse headers */
-  for (i = 0, j = 0; i < headers.length; i++, j++) {
+  for (var i = 0, j = 0; i < headers.length; i++, j++) {
     if (groups[i] != "") {
       last_group         = groups[i];
       j                  = 0;
@@ -163,9 +163,9 @@ function processCSV(csv, filename) {
           return d3.time.format('%Hh %Mm %Ss')(new Date(d));
         })
     };
-    for (lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
+    for (var lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
       line = lines[lindex].replace(/"/g, '').split(',');
-      for (cindex = 0; cindex < line.length; cindex++) {
+      for (var cindex = 0; cindex < line.length; cindex++) {
         lmap = map[cindex];
         if (lmap != null && lmap.name === 'time') {
           xValues.push(Date.parse(line[cindex].replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')));
@@ -183,9 +183,9 @@ function processCSV(csv, filename) {
   }
 
   /* Then, populate the graphs object with the CSV values */
-  for (lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
+  for (var lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
     line = lines[lindex].replace(/"/g, '').split(',');
-    for (cindex = 0; cindex < line.length; cindex++) {
+    for (var cindex = 0; cindex < line.length; cindex++) {
       lmap = map[cindex];
       if (lmap != null && lmap.name != 'time') {
         nVal = parseFloat(line[cindex]);
@@ -205,7 +205,7 @@ function processCSV(csv, filename) {
   }
 
   /* Apply specificities for each data headers */
-  for (i in graphs) {
+  for (var i in graphs) {
     name       = graphs[i].name;
     name       = name.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
     sfname     = name + "_data";
@@ -219,7 +219,7 @@ function processCSV(csv, filename) {
     if (typeof window[ofname] == "function") {
       options = window[ofname]();
     }
-    for (j in graphs[i].d) {
+    for (var j in graphs[i].d) {
       if (gdfunction !== undefined) {
         graphs[i].d[j].values = gdfunction(graphs[i].d[j].values);
       }
@@ -242,7 +242,7 @@ function processCSV(csv, filename) {
   displayFocusGraph(graphs, dmin, dmax);
 
   /* create & display the graphs */
-  for (gindex = 0; gindex <  graphs.length; gindex++) {
+  for (var gindex = 0; gindex <  graphs.length; gindex++) {
     if (graphs[gindex].name != "system" && graphs[gindex].d[0].key != "time") {
       graphName   = graphs[gindex].name;
       graphData   = graphs[gindex].d;
@@ -281,7 +281,7 @@ function createPanel(graphName, graphData, filename) {
       d3.select('#dashboard').append('div').attr('class', 'panel-clear')
       header.append('p').attr('class', 'panel-left').text(graphName)
       colors = nv.utils.getColor()
-      for (i in graphData) {
+      for (var i in graphData) {
         header.append('p').attr('class', 'panel-left').text(graphData[i].key).style({color: colors(i), 'margin-left': '15px'});
       }
     }
@@ -306,19 +306,18 @@ function createInitialOptions(graphData) {
  */
 function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax, filename) {
   panel.selectAll('svg').each(function() {
-      let elt = d3.select(this);
+      var elt = d3.select(this);
 
       nv.addGraph(function() {
-          let graphId    = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
-          let graphFu    = graphId + '_graph';
-          let graphFuPre = graphId + '_options';
-          let options    = createInitialOptions(graphData);
+          var graphId    = graphName.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g,'_');
+          var graphFu    = graphId + '_graph';
+          var graphFuPre = graphId + '_options';
+          var options    = createInitialOptions(graphData);
+          var chart = null;
 
           if (typeof window[graphFuPre] == "function") {
             options = window[graphFuPre]();
           }
-
-          let chart = null;
 
           if (options.type == 'stacked') {
             chart = nv.models.stackedAreaChart()
@@ -353,7 +352,7 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax, file
             window[graphFu](chart);
           }
 
-          let pb = d3.select(elt[0][0].parentNode.parentNode).select('.clickable').on("click", function() {
+          var pb = d3.select(elt[0][0].parentNode.parentNode).select('.clickable').on("click", function() {
             pb = d3.select(this.parentNode.parentNode.parentNode).selectAll('.list-body');
             isHidden = pb.style('display') == 'none';
             pb.style('display', isHidden ? 'inherit' : 'none');
@@ -372,9 +371,9 @@ function displayGraph(graphName, graphData, graphFormat, panel, dmin, dmax, file
 }
 
 function getValues(graphs, group, header) {
-  for (i in graphs) {
+  for (var i in graphs) {
     if (graphs[i].name == group) {
-      for (j in graphs[i].d) {
+      for (var j in graphs[i].d) {
         if (graphs[i].d[j].key == header) {
           return graphs[i].d[j].values;
         }
@@ -386,9 +385,9 @@ function getValues(graphs, group, header) {
 }
 
 function getExists(graphs, group, header) {
-  for (i in graphs) {
+  for (var i in graphs) {
     if (graphs[i].name == group) {
-      for (j in graphs[i].d) {
+      for (var j in graphs[i].d) {
         if (graphs[i].d[j].key == header) {
           return true;
         }
@@ -465,11 +464,11 @@ function displayFocusGraph(graphs, dmin, dmax) {
 }
 
 function reduceData(data) {
-  let ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
-  let extD = [ext[0] instanceof String ? Date.parse(ext[0]) : ext[0],
-          ext[1] instanceof String ? Date.parse(ext[1]) : ext[1]];
+  var ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
+  var extD = [ext[0] instanceof String ? Date.parse(ext[0]) : ext[0],
+             ext[1] instanceof String ? Date.parse(ext[1]) : ext[1]];
 
-  let ndata = data.map(function(d, i) {
+  var ndata = data.map(function(d, i) {
     return {
       key: d.key,
       area: d.area,
@@ -482,16 +481,16 @@ function reduceData(data) {
 
 
 function brushed() {
-  let ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
+  var ext  = (brush.empty() || brush.extent() == null ? x.domain() : brush.extent());
 
   for (var name in gGraphs) {
     if (gGraphs.hasOwnProperty(name)) {
       for (gIndex in gGraphs[name]) {
-        let graph = gGraphs[name][gIndex];
-        let chart = graph.chart;
-        let elt   = graph.elt;
-        let data  = graph.data;
-        let ndata = reduceData(data);
+        var graph = gGraphs[name][gIndex];
+        var chart = graph.chart;
+        var elt   = graph.elt;
+        var data  = graph.data;
+        var ndata = reduceData(data);
 
         chart.xDomain(ext);
         elt.call(chart.xAxis);

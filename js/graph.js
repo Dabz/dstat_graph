@@ -3,8 +3,8 @@
  */
 
 function dsk_total_data(data) {
-  for (idata in data) {
-    ldata = data[idata];
+  for (var idata in data) {
+    var ldata = data[idata];
     /* Byte to MB */
     data[idata].y = Math.round((data[idata].y / (1024 * 1024) ));
   }
@@ -46,7 +46,7 @@ function total_cpu_usage_data(data) {
  */
 
 function net_total_data(data) {
-  for (idata in data) {
+  for (var idata in data) {
     ldata = data[idata];
     /* Byte to MB */
     data[idata].y = Math.round((data[idata].y / (1024 * 1024)));
@@ -68,8 +68,8 @@ function net_total_options() {
  */
 
 function memory_usage_data(data) {
-  for (idata in data) {
-    ldata = data[idata];
+  for (var idata in data) {
+    var ldata = data[idata];
     /* Byte to MB */
     data[idata].y = Math.round((data[idata].y / (1024 * 1024) ));
   }

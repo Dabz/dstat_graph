@@ -55,7 +55,12 @@ $(document).ready(function() {
 /*
  * Settings functions
  */
-var settings = { "interface": "standard", "xaxis": 'time' }
+var settings = {
+  "interface": "standard",
+  "xaxis": 'time',
+  "granularity": undefined, // set while browsing the first file
+  "agg_function": "avg"
+}
 
 
 /*
@@ -151,6 +156,19 @@ function processCSV(csv, filename) {
     map[i] = {group: gindex, index: j, name: headers[i]};
   }
 
+  /* try to increase granularity to reduce memory consumption if required */
+  // TODO be smarter here, save different configuration per file?
+
+  if (settings.granularity === undefined) {
+    if (lines.length > 7200) {
+      settings.granularity = 15
+    }  else if (lines.length > 3600) {
+      settings.granularity = 5
+    } else {
+      settings.granularity = 1
+    }
+  }
+
   // First, let's merge headers and groups in a single object
   xValues = getValues(graphs, 'system', 'time');
   /* Use time for XAxis */
@@ -182,7 +200,8 @@ function processCSV(csv, filename) {
       };
   }
 
-  /* Then, populate the graphs object with the CSV values */
+  /* Then, populate the graphs object with the CSV values, aggregate data while browsing */
+  tmp_values = {}
   for (var lindex = l_env.dataIn, iindex = 0; lindex < lines.length; lindex++, iindex++) {
     line = lines[lindex].replace(/"/g, '').split(',');
     for (var cindex = 0; cindex < line.length; cindex++) {
@@ -199,7 +218,22 @@ function processCSV(csv, filename) {
           graphs[lmap.group].yformat = d3.format('<-,02f');
         }
 
-        graphs[lmap.group].d[lmap.index].values.push({y: val, x: xValues[iindex]});
+        if (tmp_values[lmap.group] == undefined) {
+          tmp_values[lmap.group] = []
+        }
+        if (tmp_values[lmap.group][lmap.index] == undefined) {
+          tmp_values[lmap.group][lmap.index] = []
+        }
+        tmp_values[lmap.group][lmap.index].push(val)
+
+        if (!((iindex + 1) % settings.granularity)) { // add a new entry in the graph
+          if (settings.agg_function == "avg") {
+            graphs[lmap.group].d[lmap.index].values.push({y: tmp_values[lmap.group][lmap.index].average(), x: xValues[iindex]});
+          } if (settings.agg_function == "max") {
+            graphs[lmap.group].d[lmap.index].values.push({y: Math.max(...tmp_values[lmap.group][lmap.index]), x: xValues[iindex]});
+          }
+          tmp_values = {}
+        }
       }
     }
   }
@@ -235,7 +269,7 @@ function processCSV(csv, filename) {
   dmin = graphs[1].d[1].values[0].x;
   dmax = graphs[1].d[0].values[graphs[1].d[0].values.length -1].x;
   // If there is many point, let's start by focusing on the last ones to reduce loading time
-  if (lines.length > 500) {
+  if ((lines.length / settings.granularity) > 500) {
     dmin = graphs[1].d[0].values[graphs[1].d[0].values.length - 500].x;
   }
 
@@ -512,6 +546,12 @@ function change_interface(type) {
   refresh();
 }
 
+function change_granularity(granularity, aggr_function) {
+  settings.granularity = granularity
+  settings.agg_function = aggr_function
+  refresh();
+}
+
 /*
  * Destroy all graphs & the focus bars
  * and recreate them using the content of
@@ -537,4 +577,15 @@ function toggle_menu() {
     $('#menu').slideUp('slow');
     $('#dashboard').animate({ "padding-top": "-=50px" }, 'slow');
   }
+}
+
+/*
+ * Type extension
+ */
+Array.prototype.sum = Array.prototype.sum || function() {
+  return this.reduce(function(sum, a) { return sum + Number(a) }, 0);
+}
+
+Array.prototype.average = Array.prototype.average || function() {
+  return this.sum() / (this.length || 1);
 }

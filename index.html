@@ -39,6 +39,31 @@
               </ul>
             </div>
           </div>
+          <div class="btn-group">
+            <div class="btn-group">
+              <button id="btn_xaxis" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-default btn">
+                Granularity <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a href="#" onclick="change_granularity(1, 'avg');">all ticks</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="change_granularity(5, 'avg');">5 ticks / average</a></li>
+                <li><a href="#" onclick="change_granularity(5, 'max');">5 ticks / maximum</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="change_granularity(15, 'avg');">15 ticks / average</a></li>
+                <li><a href="#" onclick="change_granularity(15, 'max');">15 ticks / maximum</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="change_granularity(30, 'avg');">30 ticks / average</a></li>
+                <li><a href="#" onclick="change_granularity(30, 'max');">30 ticks / maximum</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="change_granularity(60, 'avg');">60 ticks / average</a></li>
+                <li><a href="#" onclick="change_granularity(60, 'max');">60 ticks / maximum</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="change_granularity(300, 'avg');">300 ticks / average</a></li>
+                <li><a href="#" onclick="change_granularity(300, 'max');">300 ticks / maximum</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
         <div class="btn-group" id="right-menu">
           <a href"#" onclick="refresh();"><span class="glyphicon glyphicon-repeat"/></a>

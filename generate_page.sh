@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-## pregeneratehtml.sh
+## generate_page.sh
 ##
 ## Made by gaspar_d
 ## Login   <d.gasparina@gmail.com>
@@ -45,6 +45,7 @@ main() {
   done
 
   echo "</body>"
+  echo "</html>"
 }
 
 

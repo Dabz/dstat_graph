@@ -192,7 +192,7 @@ function processCSV(csv, filename) {
       }
     } /* Use sequence for xAxis */
   } else {
-      xValues = Array.apply(null, Array(nlines)).map(function (_, i) {return i;});
+      xValues = d3.range(nlines);
       graphs.xAxis = function (xa) {
         xa.axisLabel('').tickFormat(function(d) {
             return d3.format('d')(d);

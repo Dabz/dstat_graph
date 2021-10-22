@@ -437,7 +437,18 @@ function displayFocusGraph(graphs, dmin, dmax) {
   if ($('#focus').children().length > 0) {
     return;
   }
-  data = getValues(graphs, "total cpu usage", "idl")
+
+  /* original dstat has "total cpu usage" with fields "usr", "idl" ...
+   * pcp dstat has "total usage" with fields "total usage:usr", "total usage:sys" ...
+   */
+  if (getExists(graphs, "total usage", "total usage:idl")) {
+    data = getValues(graphs, "total usage", "total usage:idl")
+  } else if (getExists(graphs, "total cpu usage", "idl")) {
+    data = getValues(graphs, "total cpu usage", "idl")
+  } else {
+    alert("Failed to parse: idle CPU stats not found")
+  }
+
   if (data) { // Rollback to the first element if not found
     data = data.map(function(idl) { return {x: idl.x, y: (100 - parseFloat(idl.y)) };});
   }

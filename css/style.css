@@ -1,69 +1,6 @@
-html,body {
-  height: 100%;
-}
-
-#header {
-  position: fixed;
-  top: 0;
-  background-repeat: no-repeat;
-  margin: 0;
-  padding: 20 0 0 20;
-  width: 100%;
-  z-index: 99;
-  background-color: rgba(255, 255, 255, 0.94);
-}
-
-#header h1, #header #focus {
-  float: left;
-}
-
-#header #focus {
-  width: 200px;
-  height: 120px;
-  float: left;
-  margin-left:50px;
-}
-
-#header #menu-btn {
-  margin-right: 30px;
-  margin-top: 30px;
-  float: right;
-  font-size: 25px
-}
-
-#menu {
-  height: 50px;
-  display: none;
-}
-
-#menu:after {
-  content:"";
-  background: black;
-  height: 1px;
-  width: 50%;
-}
-
-#left-menu {
-  float: left;
-}
-
-#right-menu {
-  float: right;
-  margin-right: 30px;
-  font-size: 20px;
-}
-
-
 #focus .area {
   fill: rgba(5, 103, 150, 0.69);
   clip-path: url(#clip);
-}
-
-#content {
-  padding-top: 160px;
-  padding-left: 50px;
-  padding-right: 50px;
-  padding-bottom: 50px;
 }
 
 .axis path, .axis line {
@@ -80,83 +17,8 @@ html,body {
 }
 
 
-#header-bar {
-  position: absolute;
-  right:0;
-  left:0;
-  top:0;
-  height: 100px;
-  background-color: #ABC2EF;
-}
-
-body {
-  background-color: black;
-}
-
-#main {
-  min-height: 100%;
-}
-
-#dashboard, #main, #content {
-  background-color: rgb(254, 254, 254);
-}
-
-#dashboard {
-  margin-top: 25px;
-}
-
-.top {
-  background-color: #CCC;
-  margin-bottom: 20px;
-}
-
 .clickable {
   cursor: pointer;
-}
-
-.list-group-item:first-child {
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-}
-
-.list-group-item:last-child {
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
-.list-group-item {
-  border: 1px solid #60668C;
-}
-
-.list-group-item-compact  {
-  width: 600px;
-  float: left;
-}
-.list-group-item-compact svg {
-  height: 50px !important;
-}
-
-.panel-left {
-  float: left;
-}
-
-.panel-clear {
-  clear: both;
-}
-
-.list-body {
-  margin-right: 10px;
-  margin-left: -30px;
-}
-
-.list-body p {
-  margin-left: 40px;
-  background-color: #D6EAFB;
-  width: 60px;
-  border-radius: 20px;
-  text-align: center;
-  display: inline;
-  padding: 0 5px 0 5px;
 }
 
 #drop-background {

@@ -590,8 +590,16 @@ function change_granularity(granularity, aggr_function) {
 function refresh() {
   d3.select('#dashboard').html("");
   d3.select('#focus').html("");
-  for (i in gFiles) {
-    processFile(gFiles[i]);
+  if (gFiles.length > 0) {
+    for (let i = 0; i < gFiles.length; ++i) {
+      processFile(gFiles[i]);
+    }
+  } else {
+    // If we don't have any files, refresh from the
+    // embedded CSV's directly
+    for (let i = 0; i < gCSVs.length; ++i) {
+      processCSV(gCSVs[i], "csv " + i)
+    }
   }
 }
 

@@ -184,7 +184,7 @@ function processCSV(csv, filename) {
       line = lines[lindex].replace(/"/g, '').split(',');
       for (var cindex = 0; cindex < line.length; cindex++) {
         lmap = map[cindex];
-        if (lmap != null && lmap.name === 'time') {
+        if (lmap != null && lmap.name === 'time' && line[cindex].length > 0) {
           xValues.push(Date.parse(line[cindex].replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')));
           break;
         }

@@ -41,15 +41,14 @@ $(document).on('drop', function (e) {
  * Init functions
  */
 $(document).ready(function() {
-    // initialize graphs contained in gCSVs
-    if (gCSVs !== undefined && gCSVs.length > 0) {
-      $('#drop-background').hide();
-      for (i in gCSVs) {
-        processCSV(gCSVs[i], "csv " + i)
-      }
+  // initialize graphs contained in gCSVs
+  if (gCSVs !== undefined && gCSVs.length > 0) {
+    $('#drop-background').hide();
+    for (let i = 0; i < gCSVs.length; ++i) {
+      processCSV(gCSVs[i], "csv " + i)
     }
   }
-)
+})
 
 
 /*

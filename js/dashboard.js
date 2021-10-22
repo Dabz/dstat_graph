@@ -8,7 +8,7 @@ var gFiles  = [];
 var brush = d3.svg.brush()
   .on("brushend", brushed);
 
-var margin = {top: 10, right: 10, bottom: 100, left: 40},
+var margin = {top: 10, right: 10, bottom: 30, left: 40},
     height = 70 - margin.top,
     width  = 600 - margin.right - margin.left;
 

@@ -297,13 +297,10 @@ function createPanel(graphName, graphData, filename) {
 
   if (! settings.compact) {
     if (div.empty()) {
-      div = d3.select('#dashboard').append('div').attr('class', ' list-group-item').attr('id', id);
-      header = div.append('div').attr('class', 'panel-heading').append('h3').attr('class', 'panel-title');
-      header.append('span').text(graphName);
-      header.append('span').attr('class', 'glyphicon glyphicon-chevron-right pull-right clickable');
+      div = d3.select('#dashboard').append('li').attr('class', ' list-group-item').attr('id', id);
+      header = div.append('h3').text(graphName);
     }
-    elt = div.append('div').attr('class', 'row list-body');
-    elt.append('p').text(filename)
+    elt = div.append('p').text(filename)
     elt.append('svg').datum(reduceData(graphData));
   } else if (settings.compact) {
     if (div.empty()) {

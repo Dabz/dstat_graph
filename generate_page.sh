@@ -32,15 +32,17 @@ main() {
 
   html=`cat index.html | grep -v stylesheet | grep -v script | grep -v '</body>'`
   echo $html
-  for js in js/{d3.min.js,jquery-2.1.4.js,nv.d3.min.js,dashboard.js,graph.js}; do
+  for js in js/{d3.min,jquery-3.6.0.min,nv.d3.min,bootstrap.bundle.min,dashboard,graph}.js; do
     echo "<script type='text/javascript'>"
     cat ${js}
+    echo
     echo "</script>"
   done
   echo "<script type='text/javascript'>gCSVs=${gCSVs};</script>"
   for css in css/*.css; do
     echo "<style>"
     cat ${css}
+    echo
     echo "</style>"
   done
 

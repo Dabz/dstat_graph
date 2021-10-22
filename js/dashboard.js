@@ -434,7 +434,7 @@ function getExists(graphs, group, header) {
  * If not found in the CSV, take the first element
  */
 function displayFocusGraph(graphs, dmin, dmax) {
-  if ($('#focus').children().size() > 0) {
+  if ($('#focus').children().length > 0) {
     return;
   }
   data = getValues(graphs, "total cpu usage", "idl")

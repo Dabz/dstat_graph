@@ -1,87 +1,106 @@
-<html>
-<head>
-  <title>dstat</title>
-  <link rel="stylesheet" type="text/css" href="css/nv.d3.min.css" />
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="css/style.css" />
-</head>
-<body>
-  <script src="js/jquery-2.1.4.js" type="text/javascript"></script>
-  <script src="js/d3.min.js"       type="text/javascript"></script>
-  <script src="js/nv.d3.js"        type="text/javascript"></script>
-  <script src="js/dashboard.js"    type="text/javascript"></script>
-  <script src="js/graph.js"        type="text/javascript"></script>
-  <script src="js/bootstrap.js"    type="text/javascript"></script>
+<!doctype html>
+<html lang="en">
+  <head>
 
-  <div id="main">
-    <div class="page-header" id="header">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/nv.d3.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
 
-      <div id="menu">
-        <div class="btn-group" id="left-menu">
-          <div class="btn-group">
-            <button id="btn_xaxis" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-default btn">
-              X axis <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a href="#" onclick="change_xaxis('time')">Time</a></li>
-              <li class="divider"></li>
-              <li><a href="#" onclick="change_xaxis('seq')">Sequential</a></li>
-            </ul>
-          </div>
-          <div class="btn-group">
-            <div class="btn-group">
-              <button id="btn_xaxis" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-default btn">
-                Interface <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu">
-                <li><a href="#" onclick="change_interface('standard');">Standard</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_interface('compact')">Compact</a></li>
+    <title>dstat</title>
+  
+  </head>
+  <body>
+    <script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="js/jquery-3.6.0.min.js" type="text/javascript"></script>
+    <script src="js/d3.min.js" type="text/javascript"></script>
+    <script src="js/nv.d3.min.js" type="text/javascript"></script>
+    <script src="js/dashboard.js" type="text/javascript"></script>
+    <script src="js/graph.js" type="text/javascript"></script>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">dstat</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="granularityDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Granularity
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="granularityDropdown">
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(1, 'avg');">all ticks</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a  class="dropdown-item" href="#" onclick="change_granularity(5, 'avg');">5 ticks / average</a></li>
+                <li><a  class="dropdown-item"href="#" onclick="change_granularity(5, 'max');">5 ticks / maximum</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(15, 'avg');">15 ticks / average</a></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(15, 'max');">15 ticks / maximum</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(30, 'avg');">30 ticks / average</a></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(30, 'max');">30 ticks / maximum</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(60, 'avg');">60 ticks / average</a></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(60, 'max');">60 ticks / maximum</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(300, 'avg');">300 ticks / average</a></li>
+                <li><a class="dropdown-item" href="#" onclick="change_granularity(300, 'max');">300 ticks / maximum</a></li>
               </ul>
-            </div>
-          </div>
-          <div class="btn-group">
-            <div class="btn-group">
-              <button id="btn_xaxis" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-default btn">
-                Granularity <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu">
-                <li><a href="#" onclick="change_granularity(1, 'avg');">all ticks</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_granularity(5, 'avg');">5 ticks / average</a></li>
-                <li><a href="#" onclick="change_granularity(5, 'max');">5 ticks / maximum</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_granularity(15, 'avg');">15 ticks / average</a></li>
-                <li><a href="#" onclick="change_granularity(15, 'max');">15 ticks / maximum</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_granularity(30, 'avg');">30 ticks / average</a></li>
-                <li><a href="#" onclick="change_granularity(30, 'max');">30 ticks / maximum</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_granularity(60, 'avg');">60 ticks / average</a></li>
-                <li><a href="#" onclick="change_granularity(60, 'max');">60 ticks / maximum</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="change_granularity(300, 'avg');">300 ticks / average</a></li>
-                <li><a href="#" onclick="change_granularity(300, 'max');">300 ticks / maximum</a></li>
+            </li>
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="xaxisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                X-Axis
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="xaxisDropdown">
+                <li><a class="dropdown-item" href="#" onclick="change_xaxis('time');">Time</a></li>
+                <li><a class="dropdown-item" href="#" onclick="change_xaxis('seq');">Sequential</a></li>                  
               </ul>
-            </div>
-          </div>
-        </div>
-        <div class="btn-group" id="right-menu">
-          <a href"#" onclick="refresh();"><span class="glyphicon glyphicon-repeat"/></a>
+            </li>
+            
+            <!-- disabled for now, not sure what this is supposed to do
+                 <li class="nav-item dropdown">
+                   <a class="nav-link dropdown-toggle" href="#" id="compactDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                     X-Axis
+                   </a>
+                   <ul class="dropdown-menu" aria-labelledby="compactDropdown">
+                     <li><a class="dropdown-item" href="#" onclick="change_interface('standard');">Standard</a></li>
+                     <li><a class="dropdown-item" href="#" onclick="change_interface('compact');">Compact</a></li>                  
+                   </ul>
+                 </li>
+                 -->
+          </ul>
         </div>
       </div>
-
-
-        <h1>dstat</h1>
-        <div id="focus"></div>
-        <div id="menu-btn"><a href="#" onclick="toggle_menu();"><span class="glyphicon glyphicon-menu-hamburger"></a></span></div>
-      </div>
-      <div id="content">
-        <div id="drop-background"><div id="drop"><p>Drag & drop dstat files<img src="images/drop.png" alt=""/></p></div></div>
-        <div id="dashboard" class="container-fluid list-group"></div>
+    </nav>
+    
+    <!-- drag and drop modal -->
+    <div id="drop-background">
+      <div id="drop">
+        <p>Drag & drop dstat files<img src="images/drop.png" alt=""/></p>
       </div>
     </div>
-  </div>
+    
+    <!-- the "focus box" slider that allows you to narrow the range the graphs show -->
+    <div class="container-fluid">
+      
+      <div class="row">
+        <div class="col">
+          <div class="d-flex justify-content-center" id="focus"></div>
+          <small class="d-flex justify-content-center text-muted">Slide to select time range</small>
+        </div> <!-- /col -->
+      </div> <!-- /row -->
+      
+      <div class="row">
+        <div class="col">
+          <ul id="dashboard" class="list-group"></ul>
+        </div> <!-- /col -->
+      </div> <!-- /row -->
+      
+    </div> <!-- container-fluid -->
 
-</body>
+  </body>
 </html>

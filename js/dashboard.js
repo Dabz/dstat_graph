@@ -8,7 +8,7 @@ var gFiles  = [];
 var brush = d3.svg.brush()
   .on("brushend", brushed);
 
-var margin = {top: 10, right: 10, bottom: 100, left: 40},
+var margin = {top: 10, right: 10, bottom: 30, left: 40},
     height = 70 - margin.top,
     width  = 600 - margin.right - margin.left;
 
@@ -41,15 +41,14 @@ $(document).on('drop', function (e) {
  * Init functions
  */
 $(document).ready(function() {
-    // initialize graphs contained in gCSVs
-    if (gCSVs !== undefined && gCSVs.length > 0) {
-      $('#drop-background').hide();
-      for (i in gCSVs) {
-        processCSV(gCSVs[i], "csv " + i)
-      }
+  // initialize graphs contained in gCSVs
+  if (gCSVs !== undefined && gCSVs.length > 0) {
+    $('#drop-background').hide();
+    for (let i = 0; i < gCSVs.length; ++i) {
+      processCSV(gCSVs[i], "csv " + i)
     }
   }
-)
+})
 
 
 /*
@@ -185,7 +184,7 @@ function processCSV(csv, filename) {
       line = lines[lindex].replace(/"/g, '').split(',');
       for (var cindex = 0; cindex < line.length; cindex++) {
         lmap = map[cindex];
-        if (lmap != null && lmap.name === 'time') {
+        if (lmap != null && lmap.name === 'time' && line[cindex].length > 0) {
           xValues.push(Date.parse(line[cindex].replace(/(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/, '1942/$2/$1 $3:$4:$5')));
           break;
         }
@@ -298,13 +297,10 @@ function createPanel(graphName, graphData, filename) {
 
   if (! settings.compact) {
     if (div.empty()) {
-      div = d3.select('#dashboard').append('div').attr('class', ' list-group-item').attr('id', id);
-      header = div.append('div').attr('class', 'panel-heading').append('h3').attr('class', 'panel-title');
-      header.append('span').text(graphName);
-      header.append('span').attr('class', 'glyphicon glyphicon-chevron-right pull-right clickable');
+      div = d3.select('#dashboard').append('li').attr('class', ' list-group-item').attr('id', id);
+      header = div.append('h3').text(graphName);
     }
-    elt = div.append('div').attr('class', 'row list-body');
-    elt.append('p').text(filename)
+    elt = div.append('p').text(filename)
     elt.append('svg').datum(reduceData(graphData));
   } else if (settings.compact) {
     if (div.empty()) {
@@ -438,10 +434,21 @@ function getExists(graphs, group, header) {
  * If not found in the CSV, take the first element
  */
 function displayFocusGraph(graphs, dmin, dmax) {
-  if ($('#focus').children().size() > 0) {
+  if ($('#focus').children().length > 0) {
     return;
   }
-  data = getValues(graphs, "total cpu usage", "idl")
+
+  /* original dstat has "total cpu usage" with fields "usr", "idl" ...
+   * pcp dstat has "total usage" with fields "total usage:usr", "total usage:sys" ...
+   */
+  if (getExists(graphs, "total usage", "total usage:idl")) {
+    data = getValues(graphs, "total usage", "total usage:idl")
+  } else if (getExists(graphs, "total cpu usage", "idl")) {
+    data = getValues(graphs, "total cpu usage", "idl")
+  } else {
+    alert("Failed to parse: idle CPU stats not found")
+  }
+
   if (data) { // Rollback to the first element if not found
     data = data.map(function(idl) { return {x: idl.x, y: (100 - parseFloat(idl.y)) };});
   }
@@ -560,8 +567,16 @@ function change_granularity(granularity, aggr_function) {
 function refresh() {
   d3.select('#dashboard').html("");
   d3.select('#focus').html("");
-  for (i in gFiles) {
-    processFile(gFiles[i]);
+  if (gFiles.length > 0) {
+    for (let i = 0; i < gFiles.length; ++i) {
+      processFile(gFiles[i]);
+    }
+  } else {
+    // If we don't have any files, refresh from the
+    // embedded CSV's directly
+    for (let i = 0; i < gCSVs.length; ++i) {
+      processCSV(gCSVs[i], "csv " + i)
+    }
   }
 }
 
